@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online Retail Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1a; --card:#18223a; --card-2:#1f2b47; --line:#2a3757; --grid:#26324f;
+  --text:#f2f5fb; --text-2:#aeb8cc; --muted:#7f8aa3;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+  --bar:#5598e7; --bar-hi:#86b6ef;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+  --up:#2fd27b; --down:#ff6b6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Noto Sans Thai",system-ui,sans-serif}
+body{padding:0 16px 32px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 4px 14px;border-bottom:1px solid var(--line);margin:0 -4px 16px}
+.logo{font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px}
+.logo b{display:inline-block;width:14px;height:14px;border:3px solid var(--up);border-radius:50%;border-right-color:transparent}
+.title{font-size:22px;font-weight:500;flex:1;min-width:220px;text-align:center}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{background:transparent;color:var(--text-2);border:0;padding:9px 14px;font:inherit;font-size:14px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:#24406e;color:#fff;font-weight:600}
+.range{font-size:13px;color:var(--text-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+.card{background:var(--card);border-radius:14px;padding:16px 18px;min-width:0;position:relative}
+.card h3{margin:0;font-size:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .sub{font-size:13px;color:var(--text-2);margin-top:4px}
+.kpi .v{font-size:30px;font-weight:700;margin-top:18px;text-align:center;font-variant-numeric:tabular-nums}
+.kpi .n{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.hero .v{font-size:clamp(44px,6vw,76px);color:var(--up);letter-spacing:-.02em;margin-top:26px}
+.green{color:var(--up)} .amber{color:var(--warn)} .red{color:var(--down)}
+.q{grid-column:1/-1;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:18px 2px 0}
+.q .num{font-size:12px;font-weight:700;color:#0b1426;background:var(--bar-hi);border-radius:999px;padding:3px 10px}
+.q h2{margin:0;font-size:20px;font-weight:600}
+.ans{grid-column:1/-1;background:var(--card-2);border-left:4px solid var(--bar-hi);border-radius:10px;padding:12px 16px;font-size:15px;line-height:1.6;color:var(--text)}
+.ans b{color:#fff}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.chart{width:100%;margin-top:10px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.axis text{fill:var(--text-2);font-size:13px}
+.gl{stroke:var(--grid);stroke-width:1}
+.bar{cursor:pointer}
+.bar:hover,.bar.hl{filter:brightness(1.25)}
+table{width:100%;border-collapse:collapse;table-layout:auto;margin-top:10px;font-size:14px}
+th{font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:8px 8px}
+th.r,td.r{text-align:right}
+td{padding:9px 8px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+td.rank{color:var(--text-2);width:28px}
+td.name{font-weight:600;line-height:1.35;word-break:break-word}
+.code{display:block;font-size:11px;color:var(--muted);font-weight:500}
+.pill{display:inline-block;padding:4px 10px;border-radius:6px;font-weight:600;font-size:13px;color:#06140b;min-width:70px;text-align:center}
+.p-good{background:var(--good)} .p-warn{background:var(--warn);color:#241700} .p-crit{background:var(--crit);color:#fff} .p-blue{background:#2a78d6;color:#fff}
+.legend{display:grid;gap:7px;font-size:15px}
+.legend .row{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center}
+.legend .sw{width:14px;height:14px;border-radius:4px}
+.legend .pct{font-weight:700;font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+.legend .cnt{color:var(--text-2);font-size:12px;min-width:56px;text-align:right}
+.donut-wrap{display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:20px;align-items:center;margin-top:12px}
+.note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.split{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin:14px 0 8px}
+.split div{height:100%}
+.kv{display:flex;justify-content:space-between;font-size:13px;color:var(--text-2)}
+.kv b{color:var(--text)}
+.heat-legend{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-2);margin-top:8px}
+.heat-legend span.g{height:8px;width:120px;border-radius:4px;background:linear-gradient(90deg,#1d2c4a,#86b6ef)}
+#tip{position:fixed;pointer-events:none;background:#0d1628;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;transition:opacity .08s;z-index:20;white-space:nowrap}
+#tip .t{color:var(--text-2);margin-bottom:3px}
+footer{color:var(--muted);font-size:12px;margin-top:20px;line-height:1.6}
+@media (max-width:1100px){.c3{grid-column:span 6}.c4,.c5,.c7,.c8{grid-column:span 12}.c6{grid-column:span 12}}
+@media (max-width:640px){.tw{overflow-x:auto}th,td{padding:8px 5px;font-size:13px}.pill{min-width:0;padding:4px 7px}.top{gap:10px}.seg button{padding:8px 10px}.c3{grid-column:span 6}.title{text-align:left}.donut-wrap{grid-template-columns:1fr}.kpi .v{font-size:24px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><span>มุมดาต้า</span><b aria-hidden="true"></b></div>
+  <div class="title">Online Retail Dashboard</div>
+  <div class="seg" role="group" aria-label="ตลาด">
+    <button data-g="all" aria-pressed="true">ทั้งหมด</button>
+    <button data-g="uk" aria-pressed="false">UK</button>
+    <button data-g="intl" aria-pressed="false">ต่างประเทศ</button>
+  </div>
+  <div class="range" id="range"></div>
+</header>
+
+<main class="grid">
+  <!-- KPI row -->
+  <section class="card kpi hero c4"><h3>ยอดขายรวม (Gross)</h3><div class="sub" id="d0"></div><div class="v" id="k-rev"></div><div class="n" id="k-items"></div></section>
+  <div class="c4" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <section class="card kpi"><h3>คำสั่งซื้อ</h3><div class="sub">บิลที่ขายสำเร็จ</div><div class="v" id="k-orders"></div></section>
+    <section class="card kpi"><h3>ยอดต่อบิล</h3><div class="sub">AOV</div><div class="v amber" id="k-aov"></div></section>
+    <section class="card kpi"><h3>ลูกค้า</h3><div class="sub">มี CustomerID</div><div class="v green" id="k-cust"></div></section>
+    <section class="card kpi"><h3>อัตรายกเลิก</h3><div class="sub">บิลยกเลิก / บิลทั้งหมด</div><div class="v red" id="k-cancel"></div></section>
+  </div>
+  <section class="card c4"><h3>ยอดขายรายชั่วโมง</h3><div class="sub">รวมทุกวัน · ชี้ที่แท่งเพื่อดูตัวเลข</div><div class="chart" id="ch-hour"></div></section>
+
+  <!-- Q1 -->
+  <div class="q"><span class="num">คำถาม 1</span><h2>สินค้าขายดีวันไหน ช่วงไหน</h2></div>
+  <div class="ans" id="a1"></div>
+  <section class="card c7"><h3>ยอดขายรายเดือน</h3><div class="sub">ธ.ค. 2011 มีข้อมูลถึงวันที่ 9 เท่านั้น</div><div class="chart" id="ch-month"></div></section>
+  <section class="card c5"><h3>ยอดขายตามวันในสัปดาห์</h3><div class="sub">ร้านไม่มีการขายวันเสาร์</div><div class="chart" id="ch-week"></div></section>
+  <section class="card c12"><h3>วัน × ชั่วโมง ที่ขายดี</h3><div class="sub">สีเข้ม = ขายน้อย · สีสว่าง = ขายมาก</div><div class="chart" id="ch-heat"></div><div class="heat-legend">น้อย <span class="g"></span> มาก</div></section>
+
+  <!-- Q2 -->
+  <div class="q"><span class="num">คำถาม 2</span><h2>อะไรขายดี อะไรขายไม่ดี</h2></div>
+  <div class="ans" id="a2"></div>
+  <section class="card c7"><h3>Top 10 สินค้าขายดี</h3><div class="sub">เรียงตามยอดขาย (£)</div><div class="tw" id="t-top"></div></section>
+  <section class="card c5"><h3>10 สินค้าขายแย่สุด</h3><div class="sub">ยอดขายรวมทั้งปีต่ำที่สุด</div><div class="tw" id="t-bot"></div><div class="note" id="n-slow"></div></section>
+
+  <!-- Q3 -->
+  <div class="q"><span class="num">คำถาม 3</span><h2>สินค้าอะไรโดนยกเลิกบ่อย</h2></div>
+  <div class="ans" id="a3"></div>
+  <section class="card c8"><h3>Top 10 สินค้าที่ถูกยกเลิกบ่อยที่สุด</h3><div class="sub">นับจำนวนบิลที่ยกเลิก · อัตรา = ชิ้นที่ยกเลิก ÷ ชิ้นที่สั่งซื้อทั้งหมด</div><div class="tw" id="t-can"></div></section>
+  <section class="card c4"><h3>บิลยกเลิกรายเดือน</h3><div class="sub" id="lost"></div><div class="chart" id="ch-can"></div></section>
+
+  <!-- Q4 -->
+  <div class="q"><span class="num">คำถาม 4</span><h2>กลุ่มลูกค้าของเราเป็นใคร</h2></div>
+  <div class="ans" id="a4"></div>
+  <section class="card c6"><h3>กลุ่มลูกค้า (RFM)</h3><div class="sub">แบ่งจากความถี่การซื้อและวันที่ซื้อล่าสุด</div>
+    <div class="donut-wrap"><div id="ch-donut"></div><div class="legend" id="lg-seg"></div></div>
+    <div class="note">Champions = ซื้อ ≥5 บิล และล่าสุด ≤60 วัน · Loyal = ≥3 บิล, ≤120 วัน · New = บิลแรก ≤60 วัน · At risk = ≥2 บิล แต่หายไป >120 วัน · Lost = ซื้อบิลเดียวแล้วหายไป >180 วัน · Occasional = ที่เหลือ</div>
+  </section>
+  <section class="card c6"><h3>ยอดขายตามประเทศ</h3><div class="sub">8 ประเทศแรก + อื่นๆ</div><div class="chart" id="ch-country"></div></section>
+  <section class="card c6"><h3>ลูกค้าที่ซื้อมากที่สุด</h3><div class="sub">Top 5 ตามยอดขาย</div><div class="tw" id="t-cust"></div></section>
+  <section class="card c6"><h3>ลูกค้าประจำ vs ขาจร</h3><div class="sub">สัดส่วนลูกค้าและยอดขาย</div>
+    <div class="kv" style="margin-top:16px"><span>ลูกค้าที่ซื้อซ้ำ (&gt;1 บิล)</span><b id="rep"></b></div>
+    <div class="split" id="sp-rep"></div>
+    <div class="kv" style="margin-top:18px"><span>ยอดขายจากลูกค้าที่ไม่ระบุตัวตน (ไม่มี CustomerID)</span><b id="gst"></b></div>
+    <div class="split" id="sp-gst"></div>
+    <div class="note">ลูกค้าไม่ระบุตัวตนยังเป็นยอดขายจริง จึงเก็บไว้ในยอดรวม แต่ไม่นับในกลุ่ม RFM</div>
+  </section>
+</main>
+<footer>ยอดขายรวม (Gross) นับทุกบิลที่ขาย รวมบิลที่ภายหลังถูกยกเลิก · ยอดสุทธิ = Gross − มูลค่าบิลยกเลิก · ที่มา: แท็บ Clean Data ของไฟล์ มุมดาต้า | Online Retail (EP.1) · ตัดบิลยกเลิก รหัสที่ไม่ใช่สินค้า และรายการที่ Quantity/UnitPrice ≤ 0 ออกแล้ว · ข้อมูลยกเลิกมาจากบิลขึ้นต้น C ในแท็บ RAW · หน่วยเงิน £</footer>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DATA = {"all": {"kpi": {"revenue": 907592.78, "orders": 1834, "items": 454259, "customers": 376, "aov": 494.87, "cancel_rate": 16.3, "lost": 21148.24, "cancel_orders": 356, "net": 886444.54}, "month": [{"k": "2010-12", "rev": 66890.2, "orders": 136}, {"k": "2011-01", "rev": 65830.2, "orders": 118}, {"k": "2011-02", "rev": 35374.78, "orders": 79}, {"k": "2011-03", "rev": 56362.45, "orders": 136}, {"k": "2011-04", "rev": 42188.97, "orders": 109}, {"k": "2011-05", "rev": 66713.15, "orders": 144}, {"k": "2011-06", "rev": 57010.31, "orders": 147}, {"k": "2011-07", "rev": 83189.39, "orders": 151}, {"k": "2011-08", "rev": 76844.38, "orders": 127}, {"k": "2011-09", "rev": 94657.13, "orders": 179}, {"k": "2011-10", "rev": 73963.4, "orders": 160}, {"k": "2011-11", "rev": 144069.33, "orders": 264}, {"k": "2011-12", "rev": 44499.09, "orders": 84}], "weekday": [{"k": "Mon", "rev": 135174.19, "orders": 307}, {"k": "Tue", "rev": 158950.56, "orders": 309}, {"k": "Wed", "rev": 170165.63, "orders": 355}, {"k": "Thu", "rev": 202499.83, "orders": 367}, {"k": "Fri", "rev": 148752.27, "orders": 284}, {"k": "Sat", "rev": 0.0, "orders": 0}, {"k": "Sun", "rev": 92050.3, "orders": 212}], "hour": [{"k": "06:00", "rev": 0.0, "orders": 0}, {"k": "07:00", "rev": 489.0, "orders": 1}, {"k": "08:00", "rev": 19472.37, "orders": 51}, {"k": "09:00", "rev": 69964.87, "orders": 129}, {"k": "10:00", "rev": 110707.23, "orders": 213}, {"k": "11:00", "rev": 97904.78, "orders": 209}, {"k": "12:00", "rev": 133877.35, "orders": 312}, {"k": "13:00", "rev": 132082.43, "orders": 284}, {"k": "14:00", "rev": 98756.62, "orders": 207}, {"k": "15:00", "rev": 145754.31, "orders": 221}, {"k": "16:00", "rev": 59410.64, "orders": 127}, {"k": "17:00", "rev": 32509.68, "orders": 60}, {"k": "18:00", "rev": 3242.98, "orders": 10}, {"k": "19:00", "rev": 3420.52, "orders": 10}, {"k": "20:00", "rev": 0.0, "orders": 0}], "heat": [[0.0, 489.0, 4225.02, 8904.44, 19846.89, 11835.11, 26726.98, 24188.6, 13442.45, 15108.55, 5763.0, 4644.15, 0.0, 0.0, 0.0], [0.0, 0.0, 2784.8, 20741.37, 13128.38, 15440.1, 26246.14, 19640.64, 13823.99, 31153.07, 13735.12, 2256.95, 0.0, 0.0, 0.0], [0.0, 0.0, 5828.71, 13091.95, 19115.05, 15145.67, 24785.17, 21412.12, 21333.47, 30787.7, 12809.27, 5856.52, 0.0, 0.0, 0.0], [0.0, 0.0, 4490.93, 11380.88, 26218.27, 16702.4, 27645.16, 19058.12, 17958.57, 36731.9, 16238.87, 19411.23, 3242.98, 3420.52, 0.0], [0.0, 0.0, 2142.91, 15846.23, 17146.23, 22010.14, 19895.99, 24647.62, 18631.08, 19769.21, 8322.03, 340.83, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 15252.41, 16771.36, 8577.91, 23135.33, 13567.06, 12203.88, 2542.35, 0.0, 0.0, 0.0, 0.0]], "top": [{"code": "22423", "name": "REGENCY CAKESTAND 3 TIER", "rev": 21605.06, "qty": 1807, "orders": 222}, {"code": "47566", "name": "PARTY BUNTING", "rev": 11516.0, "qty": 2430, "orders": 171}, {"code": "85099B", "name": "JUMBO BAG RED RETROSPOT", "rev": 8142.36, "qty": 3969, "orders": 217}, {"code": "22501", "name": "PICNIC BASKET WICKER LARGE", "rev": 7963.87, "qty": 686, "orders": 64}, {"code": "85066", "name": "CREAM SWEETHEART MINI CHEST", "rev": 7086.03, "qty": 609, "orders": 83}, {"code": "85123A", "name": "WHITE HANGING HEART T-LIGHT HOLDER", "rev": 7053.54, "qty": 2428, "orders": 235}, {"code": "22086", "name": "PAPER CHAIN KIT 50'S CHRISTMAS", "rev": 5188.99, "qty": 1713, "orders": 118}, {"code": "22666", "name": "RECIPE BOX PANTRY YELLOW DESIGN", "rev": 4935.89, "qty": 1783, "orders": 127}, {"code": "79321", "name": "CHILLI LIGHTS", "rev": 4878.7, "qty": 947, "orders": 56}, {"code": "22960", "name": "JAM MAKING SET WITH JARS", "rev": 4808.85, "qty": 1173, "orders": 129}], "nprod": 3213, "bottom": [{"code": "90214P", "name": "LETTER \"P\" BLING KEY RING", "rev": 0.29, "qty": 1, "orders": 1}, {"code": "23416", "name": "CHAMBRE HOOK", "rev": 0.39, "qty": 1, "orders": 1}, {"code": "79026B", "name": "S/4 ICON COASTER,ELVIS LIVES", "rev": 0.39, "qty": 1, "orders": 1}, {"code": "71406C", "name": "BLACK ORANGE SQUEEZER", "rev": 0.42, "qty": 1, "orders": 1}, {"code": "10120", "name": "DOGGY RUBBER", "rev": 0.42, "qty": 2, "orders": 2}, {"code": "10123C", "name": "HEARTS WRAPPING TAPE", "rev": 0.65, "qty": 1, "orders": 1}, {"code": "16162L", "name": "THE KING GIFT BAG", "rev": 0.65, "qty": 1, "orders": 1}, {"code": "21320", "name": "GLASS CHALICE GREEN LARGE", "rev": 0.79, "qty": 1, "orders": 1}, {"code": "20980", "name": "36 PENCILS TUBE POSY", "rev": 0.83, "qty": 1, "orders": 1}, {"code": "90214G", "name": "LETTER \"G\" BLING KEY RING", "rev": 0.83, "qty": 1, "orders": 1}], "slow_share": 348, "cancel": [{"code": "22423", "name": "REGENCY CAKESTAND 3 TIER", "times": 39, "qty": 220, "lost": 2448.6, "rate": 12.2}, {"code": "22720", "name": "SET OF 3 CAKE TINS PANTRY DESIGN", "times": 13, "qty": 25, "lost": 123.75, "rate": 3.3}, {"code": "20725", "name": "LUNCH BAG RED RETROSPOT", "times": 10, "qty": 82, "lost": 124.1, "rate": 5.5}, {"code": "23245", "name": "SET OF 3 REGENCY CAKE TINS", "times": 10, "qty": 29, "lost": 132.35, "rate": 3.9}, {"code": "22501", "name": "PICNIC BASKET WICKER LARGE", "times": 9, "qty": 87, "lost": 743.85, "rate": 12.7}, {"code": "22698", "name": "PINK REGENCY TEACUP AND SAUCER", "times": 9, "qty": 59, "lost": 154.85, "rate": 6.8}, {"code": "21232", "name": "STRAWBERRY CERAMIC TRINKET BOX", "times": 9, "qty": 36, "lost": 44.62, "rate": 3.0}, {"code": "22666", "name": "RECIPE BOX PANTRY YELLOW DESIGN", "times": 8, "qty": 28, "lost": 82.6, "rate": 1.6}, {"code": "22960", "name": "JAM MAKING SET WITH JARS", "times": 8, "qty": 19, "lost": 79.75, "rate": 1.6}, {"code": "22699", "name": "ROSES REGENCY TEACUP AND SAUCER", "times": 7, "qty": 61, "lost": 160.75, "rate": 5.0}], "cancel_month": [{"k": "2010-12", "n": 31}, {"k": "2011-01", "n": 39}, {"k": "2011-02", "n": 18}, {"k": "2011-03", "n": 22}, {"k": "2011-04", "n": 26}, {"k": "2011-05", "n": 26}, {"k": "2011-06", "n": 29}, {"k": "2011-07", "n": 21}, {"k": "2011-08", "n": 27}, {"k": "2011-09", "n": 40}, {"k": "2011-10", "n": 28}, {"k": "2011-11", "n": 41}, {"k": "2011-12", "n": 8}], "country": [{"k": "United Kingdom", "rev": 712360.29}, {"k": "Ireland", "rev": 137311.05}, {"k": "Germany", "rev": 23516.96}, {"k": "France", "rev": 7107.21}, {"k": "Finland", "rev": 6580.16}, {"k": "Spain", "rev": 5736.35}, {"k": "Switzerland", "rev": 3779.25}, {"k": "Denmark", "rev": 3006.42}, {"k": "Other", "rev": 8195.09}], "guest": {"known": 769594.69, "guest": 137998.09}, "seg": [{"k": "Champions", "n": 76, "rev": 531520.24, "f": 13.7, "rec": 10}, {"k": "Loyal", "n": 79, "rev": 136870.67, "f": 4.2, "rec": 31}, {"k": "New", "n": 46, "rev": 12720.99, "f": 1.0, "rec": 28}, {"k": "Occasional", "n": 84, "rev": 41888.48, "f": 1.6, "rec": 67}, {"k": "At risk", "n": 31, "rev": 25942.43, "f": 2.7, "rec": 179}, {"k": "Lost", "n": 60, "rev": 20651.88, "f": 1.0, "rec": 268}], "repeat": {"repeat": 239, "once": 137}, "topcust": [{"id": "14911", "country": "Ireland", "rev": 136161.83, "orders": 198, "rec": 1}, {"id": "14088", "country": "United Kingdom", "rev": 50491.81, "orders": 13, "rec": 10}, {"id": "17389", "country": "United Kingdom", "rev": 31833.68, "orders": 34, "rec": 1}, {"id": "14680", "country": "United Kingdom", "rev": 28754.11, "orders": 16, "rec": 25}, {"id": "12471", "country": "Germany", "rev": 17388.65, "orders": 27, "rec": 2}]}, "uk": {"kpi": {"revenue": 712360.29, "orders": 1534, "items": 344237, "customers": 346, "aov": 464.38, "cancel_rate": 15.7, "lost": 12499.36, "cancel_orders": 285, "net": 699860.93}, "month": [{"k": "2010-12", "rev": 54610.4, "orders": 117}, {"k": "2011-01", "rev": 53697.57, "orders": 102}, {"k": "2011-02", "rev": 29397.82, "orders": 67}, {"k": "2011-03", "rev": 41238.67, "orders": 111}, {"k": "2011-04", "rev": 33745.97, "orders": 92}, {"k": "2011-05", "rev": 55520.62, "orders": 123}, {"k": "2011-06", "rev": 44699.3, "orders": 125}, {"k": "2011-07", "rev": 67069.97, "orders": 128}, {"k": "2011-08", "rev": 62546.18, "orders": 110}, {"k": "2011-09", "rev": 66201.99, "orders": 138}, {"k": "2011-10", "rev": 52282.58, "orders": 130}, {"k": "2011-11", "rev": 115918.64, "orders": 218}, {"k": "2011-12", "rev": 35430.58, "orders": 73}], "weekday": [{"k": "Mon", "rev": 101394.82, "orders": 244}, {"k": "Tue", "rev": 131183.11, "orders": 267}, {"k": "Wed", "rev": 134383.01, "orders": 302}, {"k": "Thu", "rev": 150486.93, "orders": 295}, {"k": "Fri", "rev": 114265.46, "orders": 232}, {"k": "Sat", "rev": 0.0, "orders": 0}, {"k": "Sun", "rev": 80646.96, "orders": 194}], "hour": [{"k": "06:00", "rev": 0.0, "orders": 0}, {"k": "07:00", "rev": 0.0, "orders": 0}, {"k": "08:00", "rev": 9689.46, "orders": 31}, {"k": "09:00", "rev": 44960.14, "orders": 102}, {"k": "10:00", "rev": 82912.8, "orders": 170}, {"k": "11:00", "rev": 78137.21, "orders": 176}, {"k": "12:00", "rev": 102843.34, "orders": 259}, {"k": "13:00", "rev": 114254.3, "orders": 251}, {"k": "14:00", "rev": 68634.16, "orders": 169}, {"k": "15:00", "rev": 127501.38, "orders": 196}, {"k": "16:00", "rev": 55210.24, "orders": 117}, {"k": "17:00", "rev": 23750.39, "orders": 47}, {"k": "18:00", "rev": 2967.34, "orders": 9}, {"k": "19:00", "rev": 1499.53, "orders": 7}, {"k": "20:00", "rev": 0.0, "orders": 0}], "heat": [[0.0, 0.0, 1998.94, 6645.91, 12156.04, 10673.72, 16819.93, 18730.09, 10671.9, 13515.44, 5763.0, 4419.85, 0.0, 0.0, 0.0], [0.0, 0.0, 1631.96, 12110.23, 11557.49, 11424.35, 23529.22, 17163.73, 9095.85, 30016.44, 12649.13, 2004.71, 0.0, 0.0, 0.0], [0.0, 0.0, 3077.15, 11002.76, 12755.53, 13272.55, 19047.75, 17689.97, 16603.98, 25190.77, 11918.21, 3824.34, 0.0, 0.0, 0.0], [0.0, 0.0, 1946.74, 6232.93, 21668.11, 12149.07, 20503.05, 14503.79, 11341.26, 29483.85, 15030.6, 13160.66, 2967.34, 1499.53, 0.0], [0.0, 0.0, 1034.67, 8968.31, 10808.66, 17303.09, 14365.48, 23903.38, 10235.36, 18983.65, 8322.03, 340.83, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 13966.97, 13314.43, 8577.91, 22263.34, 10685.81, 10311.23, 1527.27, 0.0, 0.0, 0.0, 0.0]], "top": [{"code": "22423", "name": "REGENCY CAKESTAND 3 TIER", "rev": 11980.01, "qty": 964, "orders": 147}, {"code": "47566", "name": "PARTY BUNTING", "rev": 10638.3, "qty": 2244, "orders": 146}, {"code": "22501", "name": "PICNIC BASKET WICKER LARGE", "rev": 7844.47, "qty": 674, "orders": 58}, {"code": "85099B", "name": "JUMBO BAG RED RETROSPOT", "rev": 7745.47, "qty": 3775, "orders": 198}, {"code": "85066", "name": "CREAM SWEETHEART MINI CHEST", "rev": 6882.03, "qty": 593, "orders": 75}, {"code": "85123A", "name": "WHITE HANGING HEART T-LIGHT HOLDER", "rev": 4872.14, "qty": 1624, "orders": 198}, {"code": "79321", "name": "CHILLI LIGHTS", "rev": 4766.9, "qty": 927, "orders": 51}, {"code": "22666", "name": "RECIPE BOX PANTRY YELLOW DESIGN", "rev": 4303.19, "qty": 1549, "orders": 109}, {"code": "22112", "name": "CHOCOLATE HOT WATER BOTTLE", "rev": 4206.62, "qty": 778, "orders": 87}, {"code": "84029G", "name": "KNITTED UNION FLAG HOT WATER BOTTLE", "rev": 3937.97, "qty": 863, "orders": 57}], "nprod": 3133, "bottom": [{"code": "90214P", "name": "LETTER \"P\" BLING KEY RING", "rev": 0.29, "qty": 1, "orders": 1}, {"code": "23416", "name": "CHAMBRE HOOK", "rev": 0.39, "qty": 1, "orders": 1}, {"code": "79026B", "name": "S/4 ICON COASTER,ELVIS LIVES", "rev": 0.39, "qty": 1, "orders": 1}, {"code": "71406C", "name": "BLACK ORANGE SQUEEZER", "rev": 0.42, "qty": 1, "orders": 1}, {"code": "10120", "name": "DOGGY RUBBER", "rev": 0.42, "qty": 2, "orders": 2}, {"code": "10123C", "name": "HEARTS WRAPPING TAPE", "rev": 0.65, "qty": 1, "orders": 1}, {"code": "16162L", "name": "THE KING GIFT BAG", "rev": 0.65, "qty": 1, "orders": 1}, {"code": "21320", "name": "GLASS CHALICE GREEN LARGE", "rev": 0.79, "qty": 1, "orders": 1}, {"code": "20980", "name": "36 PENCILS TUBE POSY", "rev": 0.83, "qty": 1, "orders": 1}, {"code": "90214G", "name": "LETTER \"G\" BLING KEY RING", "rev": 0.83, "qty": 1, "orders": 1}], "slow_share": 368, "cancel": [{"code": "22423", "name": "REGENCY CAKESTAND 3 TIER", "times": 24, "qty": 126, "lost": 1408.5, "rate": 13.1}, {"code": "22720", "name": "SET OF 3 CAKE TINS PANTRY DESIGN", "times": 11, "qty": 21, "lost": 103.95, "rate": 4.7}, {"code": "20725", "name": "LUNCH BAG RED RETROSPOT", "times": 10, "qty": 82, "lost": 124.1, "rate": 6.0}, {"code": "22501", "name": "PICNIC BASKET WICKER LARGE", "times": 9, "qty": 87, "lost": 743.85, "rate": 12.9}, {"code": "22666", "name": "RECIPE BOX PANTRY YELLOW DESIGN", "times": 7, "qty": 26, "lost": 76.7, "rate": 1.7}, {"code": "85066", "name": "CREAM SWEETHEART MINI CHEST", "times": 7, "qty": 16, "lost": 131.1, "rate": 2.7}, {"code": "85099B", "name": "JUMBO BAG RED RETROSPOT", "times": 6, "qty": 116, "lost": 212.28, "rate": 3.1}, {"code": "20728", "name": "LUNCH BAG CARS BLUE", "times": 6, "qty": 25, "lost": 38.65, "rate": 2.9}, {"code": "22960", "name": "JAM MAKING SET WITH JARS", "times": 6, "qty": 17, "lost": 71.25, "rate": 2.2}, {"code": "22698", "name": "PINK REGENCY TEACUP AND SAUCER", "times": 6, "qty": 9, "lost": 26.55, "rate": 1.8}], "cancel_month": [{"k": "2010-12", "n": 26}, {"k": "2011-01", "n": 33}, {"k": "2011-02", "n": 15}, {"k": "2011-03", "n": 17}, {"k": "2011-04", "n": 24}, {"k": "2011-05", "n": 20}, {"k": "2011-06", "n": 26}, {"k": "2011-07", "n": 17}, {"k": "2011-08", "n": 19}, {"k": "2011-09", "n": 28}, {"k": "2011-10", "n": 20}, {"k": "2011-11", "n": 33}, {"k": "2011-12", "n": 7}], "country": [{"k": "United Kingdom", "rev": 712360.29}], "guest": {"known": 575518.92, "guest": 136841.37}, "seg": [{"k": "Champions", "n": 72, "rev": 368580.15, "f": 11.2, "rec": 10}, {"k": "Loyal", "n": 72, "rev": 116676.79, "f": 4.1, "rec": 30}, {"k": "New", "n": 44, "rev": 12106.43, "f": 1.0, "rec": 28}, {"k": "Occasional", "n": 76, "rev": 37002.49, "f": 1.6, "rec": 64}, {"k": "At risk", "n": 29, "rev": 24842.48, "f": 2.7, "rec": 178}, {"k": "Lost", "n": 53, "rev": 16310.58, "f": 1.0, "rec": 268}], "repeat": {"repeat": 222, "once": 124}, "topcust": [{"id": "14088", "country": "United Kingdom", "rev": 50491.81, "orders": 13, "rec": 10}, {"id": "17389", "country": "United Kingdom", "rev": 31833.68, "orders": 34, "rec": 1}, {"id": "14680", "country": "United Kingdom", "rev": 28754.11, "orders": 16, "rec": 25}, {"id": "15513", "country": "United Kingdom", "rev": 14758.22, "orders": 19, "rec": 33}, {"id": "13113", "country": "United Kingdom", "rev": 12245.96, "orders": 24, "rec": 1}]}, "intl": {"kpi": {"revenue": 195232.49, "orders": 300, "items": 110022, "customers": 30, "aov": 650.77, "cancel_rate": 19.1, "lost": 8648.88, "cancel_orders": 71, "net": 186583.61}, "month": [{"k": "2010-12", "rev": 12279.8, "orders": 19}, {"k": "2011-01", "rev": 12132.63, "orders": 16}, {"k": "2011-02", "rev": 5976.96, "orders": 12}, {"k": "2011-03", "rev": 15123.78, "orders": 25}, {"k": "2011-04", "rev": 8443.0, "orders": 17}, {"k": "2011-05", "rev": 11192.53, "orders": 21}, {"k": "2011-06", "rev": 12311.01, "orders": 22}, {"k": "2011-07", "rev": 16119.42, "orders": 23}, {"k": "2011-08", "rev": 14298.2, "orders": 17}, {"k": "2011-09", "rev": 28455.14, "orders": 41}, {"k": "2011-10", "rev": 21680.82, "orders": 30}, {"k": "2011-11", "rev": 28150.69, "orders": 46}, {"k": "2011-12", "rev": 9068.51, "orders": 11}], "weekday": [{"k": "Mon", "rev": 33779.37, "orders": 63}, {"k": "Tue", "rev": 27767.45, "orders": 42}, {"k": "Wed", "rev": 35782.62, "orders": 53}, {"k": "Thu", "rev": 52012.9, "orders": 72}, {"k": "Fri", "rev": 34486.81, "orders": 52}, {"k": "Sat", "rev": 0.0, "orders": 0}, {"k": "Sun", "rev": 11403.34, "orders": 18}], "hour": [{"k": "06:00", "rev": 0.0, "orders": 0}, {"k": "07:00", "rev": 489.0, "orders": 1}, {"k": "08:00", "rev": 9782.91, "orders": 20}, {"k": "09:00", "rev": 25004.73, "orders": 27}, {"k": "10:00", "rev": 27794.43, "orders": 43}, {"k": "11:00", "rev": 19767.57, "orders": 33}, {"k": "12:00", "rev": 31034.01, "orders": 53}, {"k": "13:00", "rev": 17828.13, "orders": 33}, {"k": "14:00", "rev": 30122.46, "orders": 38}, {"k": "15:00", "rev": 18252.93, "orders": 25}, {"k": "16:00", "rev": 4200.4, "orders": 10}, {"k": "17:00", "rev": 8759.29, "orders": 13}, {"k": "18:00", "rev": 275.64, "orders": 1}, {"k": "19:00", "rev": 1920.99, "orders": 3}, {"k": "20:00", "rev": 0.0, "orders": 0}], "heat": [[0.0, 489.0, 2226.08, 2258.53, 7690.85, 1161.39, 9907.05, 5458.51, 2770.55, 1593.11, 0.0, 224.3, 0.0, 0.0, 0.0], [0.0, 0.0, 1152.84, 8631.14, 1570.89, 4015.75, 2716.92, 2476.91, 4728.14, 1136.63, 1085.99, 252.24, 0.0, 0.0, 0.0], [0.0, 0.0, 2751.56, 2089.19, 6359.52, 1873.12, 5737.42, 3722.15, 4729.49, 5596.93, 891.06, 2032.18, 0.0, 0.0, 0.0], [0.0, 0.0, 2544.19, 5147.95, 4550.16, 4553.33, 7142.11, 4554.33, 6617.31, 7248.05, 1208.27, 6250.57, 275.64, 1920.99, 0.0], [0.0, 0.0, 1108.24, 6877.92, 6337.57, 4707.05, 5530.51, 744.24, 8395.72, 785.56, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 1285.44, 3456.93, 0.0, 871.99, 2881.25, 1892.65, 1015.08, 0.0, 0.0, 0.0, 0.0]], "top": [{"code": "22423", "name": "REGENCY CAKESTAND 3 TIER", "rev": 9625.05, "qty": 843, "orders": 75}, {"code": "85123A", "name": "WHITE HANGING HEART T-LIGHT HOLDER", "rev": 2181.4, "qty": 804, "orders": 37}, {"code": "22960", "name": "JAM MAKING SET WITH JARS", "rev": 1542.0, "qty": 396, "orders": 31}, {"code": "23173", "name": "REGENCY TEAPOT ROSES", "rev": 1513.6, "qty": 176, "orders": 18}, {"code": "22910", "name": "PAPER CHAIN KIT VINTAGE CHRISTMAS", "rev": 1449.9, "qty": 562, "orders": 7}, {"code": "22720", "name": "SET OF 3 CAKE TINS PANTRY DESIGN", "rev": 1439.7, "qty": 318, "orders": 31}, {"code": "22699", "name": "ROSES REGENCY TEACUP AND SAUCER", "rev": 1407.75, "qty": 513, "orders": 38}, {"code": "22086", "name": "PAPER CHAIN KIT 50'S CHRISTMAS", "rev": 1369.8, "qty": 524, "orders": 14}, {"code": "22950", "name": "36 DOILIES VINTAGE CHRISTMAS", "rev": 1347.0, "qty": 1068, "orders": 7}, {"code": "23245", "name": "SET OF 3 REGENCY CAKE TINS", "rev": 1330.2, "qty": 292, "orders": 36}], "nprod": 2031, "bottom": [{"code": "84596J", "name": "MIXED NUTS LIGHT GREEN BOWL", "rev": 0.42, "qty": 1, "orders": 1}, {"code": "84199", "name": "GLOW IN DARK DOLPHINS", "rev": 0.84, "qty": 4, "orders": 1}, {"code": "22565", "name": "FELTCRAFT HAIRBANDS PINK AND WHITE", "rev": 0.85, "qty": 1, "orders": 1}, {"code": "22566", "name": "FELTCRAFT HAIRBAND PINK AND PURPLE", "rev": 0.85, "qty": 1, "orders": 1}, {"code": "21034", "name": "REX CASH+CARRY JUMBO SHOPPER", "rev": 0.95, "qty": 1, "orders": 1}, {"code": "22562", "name": "MONSTERS STENCIL CRAFT", "rev": 1.25, "qty": 1, "orders": 1}, {"code": "22564", "name": "ALPHABET STENCIL CRAFT", "rev": 1.25, "qty": 1, "orders": 1}, {"code": "81952V", "name": "ROUND PURPLE CLOCK WITH SUCKER", "rev": 1.9, "qty": 10, "orders": 1}, {"code": "17136A", "name": "BLUE STONES ON WIRE FOR CANDLE", "rev": 1.92, "qty": 24, "orders": 1}, {"code": "23512", "name": "EMBROIDERED RIBBON REEL ROSIE", "rev": 2.08, "qty": 1, "orders": 1}], "slow_share": 679, "cancel": [{"code": "22423", "name": "REGENCY CAKESTAND 3 TIER", "times": 15, "qty": 94, "lost": 1040.1, "rate": 11.2}, {"code": "20914", "name": "SET/5 RED RETROSPOT LID GLASS BOWLS", "times": 5, "qty": 19, "lost": 56.05, "rate": 10.5}, {"code": "23245", "name": "SET OF 3 REGENCY CAKE TINS", "times": 5, "qty": 16, "lost": 74.4, "rate": 5.5}, {"code": "21232", "name": "STRAWBERRY CERAMIC TRINKET BOX", "times": 5, "qty": 14, "lost": 17.5, "rate": 4.6}, {"code": "23174", "name": "REGENCY SUGAR BOWL GREEN", "times": 4, "qty": 54, "lost": 204.9, "rate": 17.4}, {"code": "23198", "name": "PANTRY MAGNETIC SHOPPING LIST", "times": 4, "qty": 24, "lost": 34.8, "rate": 9.5}, {"code": "22796", "name": "PHOTO FRAME 3 CLASSIC HANGING", "times": 4, "qty": 9, "lost": 89.55, "rate": 25.0}, {"code": "22649", "name": "STRAWBERRY FAIRY CAKE TEAPOT", "times": 4, "qty": 8, "lost": 39.6, "rate": 13.8}, {"code": "22699", "name": "ROSES REGENCY TEACUP AND SAUCER", "times": 3, "qty": 56, "lost": 146.0, "rate": 10.9}, {"code": "22698", "name": "PINK REGENCY TEACUP AND SAUCER", "times": 3, "qty": 50, "lost": 128.3, "rate": 13.6}], "cancel_month": [{"k": "2010-12", "n": 5}, {"k": "2011-01", "n": 6}, {"k": "2011-02", "n": 3}, {"k": "2011-03", "n": 5}, {"k": "2011-04", "n": 2}, {"k": "2011-05", "n": 6}, {"k": "2011-06", "n": 3}, {"k": "2011-07", "n": 4}, {"k": "2011-08", "n": 8}, {"k": "2011-09", "n": 12}, {"k": "2011-10", "n": 8}, {"k": "2011-11", "n": 8}, {"k": "2011-12", "n": 1}], "country": [{"k": "Ireland", "rev": 137311.05}, {"k": "Germany", "rev": 23516.96}, {"k": "France", "rev": 7107.21}, {"k": "Finland", "rev": 6580.16}, {"k": "Spain", "rev": 5736.35}, {"k": "Switzerland", "rev": 3779.25}, {"k": "Denmark", "rev": 3006.42}, {"k": "Belgium", "rev": 1909.17}, {"k": "Other", "rev": 6285.92}], "guest": {"known": 194075.77, "guest": 1156.72}, "seg": [{"k": "Champions", "n": 4, "rev": 162940.09, "f": 59.8, "rec": 14}, {"k": "Loyal", "n": 7, "rev": 20193.88, "f": 4.4, "rec": 67}, {"k": "New", "n": 2, "rev": 614.56, "f": 1.0, "rec": 30}, {"k": "Occasional", "n": 8, "rev": 4885.99, "f": 1.5, "rec": 81}, {"k": "At risk", "n": 2, "rev": 1099.95, "f": 2.5, "rec": 202}, {"k": "Lost", "n": 7, "rev": 4341.3, "f": 1.0, "rec": 284}], "repeat": {"repeat": 17, "once": 13}, "topcust": [{"id": "14911", "country": "Ireland", "rev": 136161.83, "orders": 198, "rec": 1}, {"id": "12471", "country": "Germany", "rev": 17388.65, "orders": 27, "rec": 2}, {"id": "12428", "country": "Finland", "rev": 6405.26, "orders": 8, "rec": 26}, {"id": "12637", "country": "France", "rev": 5804.9, "orders": 8, "rec": 67}, {"id": "12539", "country": "Spain", "rev": 5568.35, "orders": 4, "rec": 22}]}, "meta": {"start": "2010-12-01", "end": "2011-12-09"}};
+const TH_MON = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const TH_DAY = {Mon:'จันทร์',Tue:'อังคาร',Wed:'พุธ',Thu:'พฤหัสฯ',Fri:'ศุกร์',Sat:'เสาร์',Sun:'อาทิตย์'};
+const SEG_TH = {Champions:'Champions',Loyal:'Loyal',New:'New',Occasional:'Occasional','At risk':'At risk',Lost:'Lost'};
+const SEG_COL = ['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)','var(--s6)'];
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const money=(v,d=0)=>'£'+Number(v).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const short=v=>v>=1e6?'£'+(v/1e6).toFixed(2)+'M':v>=1e3?'£'+(v/1e3).toFixed(v>=1e5?0:1)+'K':'£'+Math.round(v);
+const int=v=>Number(v).toLocaleString('en-GB');
+const mLabel=k=>{const [y,m]=k.split('-');return TH_MON[+m-1]+' '+y.slice(2)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const tip=$('tip');
+function showTip(e,title,lines){tip.innerHTML='<div class="t">'+esc(title)+'</div>'+lines.map(l=>'<div>'+l+'</div>').join('');tip.style.opacity=1;moveTip(e)}
+function moveTip(e){const w=tip.offsetWidth,h=tip.offsetHeight;let x=e.clientX+14,y=e.clientY-h-10;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y<8)y=e.clientY+16;tip.style.left=x+'px';tip.style.top=y+'px'}
+function hideTip(){tip.style.opacity=0}
+function el(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const k in attrs)n.setAttribute(k,attrs[k]);if(parent)parent.appendChild(n);return n}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+// rounded-top bar path anchored to baseline
+function barPath(x,y,w,h,r){r=Math.min(r,w/2,h);if(h<=0)return '';return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`}
+
+function barChart(target,items,{H=220,labelEvery=1,fmt=short,tipFn,hiMax=true,rotate=false,horizontal=false,intStep=0}={}){
+  const box=$(target);box.innerHTML='';
+  if(horizontal) return hBar(box,items,{fmt,tipFn});
+  const W=600,padL=46,padR=8,padT=14,padB=rotate?46:26;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img'},box);
+  const raw=Math.max(...items.map(d=>d.v));const max=intStep?Math.max(intStep*4,Math.ceil(raw/(intStep*4))*intStep*4):niceMax(raw);
+  const iw=W-padL-padR,ih=H-padT-padB;const g=el('g',{class:'axis'},svg);
+  for(let i=0;i<=4;i++){const y=padT+ih-ih*i/4;el('line',{x1:padL,x2:W-padR,y1:y,y2:y,class:'gl'},g);const t=el('text',{x:padL-8,y:y+4,'text-anchor':'end'},g);t.textContent=fmt(max*i/4)}
+  const step=iw/items.length,bw=Math.max(4,Math.min(28,step*0.62));
+  const top=Math.max(...items.map(d=>d.v));
+  items.forEach((d,i)=>{
+    const x=padL+step*i+(step-bw)/2,h=ih*d.v/max,y=padT+ih-h;
+    const p=el('path',{d:barPath(x,y,bw,h,4),fill:(hiMax&&d.v===top)?'var(--bar-hi)':'var(--bar)',class:'bar'},svg);
+    const hit=el('rect',{x:padL+step*i,y:padT,width:step,height:ih,fill:'transparent'},svg);
+    hit.addEventListener('mousemove',e=>{p.classList.add('hl');showTip(e,d.title||d.k,tipFn?tipFn(d):[money(d.v)])});
+    hit.addEventListener('mouseleave',()=>{p.classList.remove('hl');hideTip()});
+    if(i%labelEvery===0){const tx=padL+step*i+step/2,ty=H-padB+16;const t=el('text',rotate?{x:tx,y:ty,'text-anchor':'end',transform:`rotate(-45 ${tx} ${ty})`}:{x:tx,y:ty,'text-anchor':'middle'},g);t.textContent=d.label||d.k}
+    if(hiMax&&d.v===top&&d.v>0){const t=el('text',{x:x+bw/2,y:y-6,'text-anchor':'middle',fill:'var(--text)','font-size':'11','font-weight':'600'},svg);t.textContent=fmt(d.v)}
+  });
+}
+function hBar(box,items,{fmt,tipFn}){
+  const W=600,rowH=30,padL=130,padR=60,H=items.length*rowH+6;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img'},box);
+  const max=Math.max(...items.map(d=>d.v));
+  items.forEach((d,i)=>{
+    const y=i*rowH+5,bh=18,w=Math.max(2,(W-padL-padR)*d.v/max);
+    const t=el('text',{x:padL-10,y:y+13,'text-anchor':'end',fill:'var(--text-2)','font-size':'12'},svg);t.textContent=d.k;
+    const r=Math.min(4,w/2);
+    const p=el('path',{d:`M${padL},${y}H${padL+w-r}Q${padL+w},${y} ${padL+w},${y+r}V${y+bh-r}Q${padL+w},${y+bh} ${padL+w-r},${y+bh}H${padL}Z`,fill:i===0?'var(--bar-hi)':'var(--bar)',class:'bar'},svg);
+    const v=el('text',{x:padL+w+8,y:y+13,fill:'var(--text)','font-size':'12','font-weight':'600'},svg);v.textContent=fmt(d.v);
+    const hit=el('rect',{x:0,y:y-5,width:W,height:rowH,fill:'transparent'},svg);
+    hit.addEventListener('mousemove',e=>{p.classList.add('hl');showTip(e,d.k,tipFn?tipFn(d):[money(d.v)])});
+    hit.addEventListener('mouseleave',()=>{p.classList.remove('hl');hideTip()});
+  });
+}
+function heat(target,mat){
+  const box=$(target);box.innerHTML='';
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],hours=[...Array(15)].map((_,i)=>i+6);
+  const W=900,padL=70,padT=6,padB=24,cw=(W-padL-6)/hours.length,ch=26,H=padT+ch*7+padB;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img'},box);
+  const max=Math.max(...mat.flat());
+  const lo=[29,44,74],hi=[134,182,239];
+  const col=v=>{if(v<=0)return 'rgba(255,255,255,.03)';const t=Math.sqrt(v/max);return `rgb(${lo.map((a,i)=>Math.round(a+(hi[i]-a)*t)).join(',')})`};
+  days.forEach((dname,r)=>{
+    const t=el('text',{x:padL-10,y:padT+r*ch+17,'text-anchor':'end',fill:'var(--text-2)','font-size':'12'},svg);t.textContent=TH_DAY[dname];
+    hours.forEach((h,c)=>{
+      const v=mat[r][c];const rc=el('rect',{x:padL+c*cw+1,y:padT+r*ch+1,width:cw-2,height:ch-2,rx:4,fill:col(v)},svg);
+      rc.addEventListener('mousemove',e=>{rc.setAttribute('stroke','#fff');showTip(e,TH_DAY[dname]+' · '+String(h).padStart(2,'0')+':00–'+String(h+1).padStart(2,'0')+':00',[v>0?money(v):'ไม่มียอดขาย'])});
+      rc.addEventListener('mouseleave',()=>{rc.removeAttribute('stroke');hideTip()});
+    });
+  });
+  hours.forEach((h,c)=>{const t=el('text',{x:padL+c*cw+cw/2,y:H-6,'text-anchor':'middle',fill:'var(--text-2)','font-size':'11'},svg);t.textContent=String(h).padStart(2,'0')});
+}
+function donut(target,segs,total){
+  const box=$(target);box.innerHTML='';const S=220,c=S/2,R=96,r=70;
+  const svg=el('svg',{viewBox:`0 0 ${S} ${S}`,role:'img'},box);
+  const sum=segs.reduce((a,b)=>a+b.n,0);let a0=-Math.PI/2;
+  segs.forEach((s,i)=>{
+    if(!s.n)return;const a1=a0+2*Math.PI*s.n/sum;const large=a1-a0>Math.PI?1:0;
+    const P=(rad,a)=>[c+rad*Math.cos(a),c+rad*Math.sin(a)];
+    const [x0,y0]=P(R,a0),[x1,y1]=P(R,a1),[x2,y2]=P(r,a1),[x3,y3]=P(r,a0);
+    const p=el('path',{d:`M${x0},${y0}A${R},${R} 0 ${large} 1 ${x1},${y1}L${x2},${y2}A${r},${r} 0 ${large} 0 ${x3},${y3}Z`,fill:SEG_COL[i],stroke:'var(--card)','stroke-width':2,class:'bar'},svg);
+    p.addEventListener('mousemove',e=>showTip(e,s.k,[int(s.n)+' คน ('+(s.n/sum*100).toFixed(0)+'%)','ยอดขาย '+money(s.rev),'เฉลี่ย '+s.f+' บิล/คน · ล่าสุด '+s.rec+' วันก่อน']));
+    p.addEventListener('mouseleave',hideTip);a0=a1;
+  });
+  const t1=el('text',{x:c,y:c-18,'text-anchor':'middle',fill:'var(--text-2)','font-size':'14'},svg);t1.textContent='ลูกค้า';
+  const t2=el('text',{x:c,y:c+26,'text-anchor':'middle',fill:'var(--text)','font-size':'46','font-weight':'800'},svg);t2.textContent=int(total);
+}
+function split(target,parts){const b=$(target);b.innerHTML='';parts.forEach(p=>{const d=document.createElement('div');d.style.flex=p.v;d.style.background=p.c;d.title=p.t;b.appendChild(d)})}
+
+function render(g){
+  const D=DATA[g],k=D.kpi;
+  $('range').textContent='1 ธ.ค. 2010 – 9 ธ.ค. 2011';
+  $('d0').textContent='ทั้งช่วงข้อมูล';
+  $('k-rev').textContent=money(k.revenue);
+  $('k-items').textContent='สุทธิหลังหักยกเลิก '+money(k.net)+' · '+int(k.items)+' ชิ้น';
+  $('k-orders').textContent=int(k.orders);
+  $('k-aov').textContent=money(k.aov);
+  $('k-cust').textContent=int(k.customers);
+  $('k-cancel').textContent=k.cancel_rate+'%';
+
+  barChart('ch-hour',D.hour.map(d=>({k:d.k,label:d.k.slice(0,2),v:d.rev,orders:d.orders})),{H:230,labelEvery:2,tipFn:d=>[money(d.v),int(d.orders)+' บิล']});
+  barChart('ch-month',D.month.map(d=>({k:d.k,label:mLabel(d.k),title:mLabel(d.k),v:d.rev,orders:d.orders})),{H:240,rotate:true,tipFn:d=>[money(d.v),int(d.orders)+' บิล']});
+  barChart('ch-week',D.weekday.map(d=>({k:d.k,label:TH_DAY[d.k],title:'วัน'+TH_DAY[d.k],v:d.rev,orders:d.orders})),{H:240,tipFn:d=>d.v?[money(d.v),int(d.orders)+' บิล']:['ไม่มียอดขาย']});
+  heat('ch-heat',D.heat);
+
+  // Q1 answer
+  const bm=[...D.month].sort((a,b)=>b.rev-a.rev)[0], bw=[...D.weekday].sort((a,b)=>b.rev-a.rev)[0];
+  const hrs=D.hour; let best=0,bi=0; for(let i=0;i<hrs.length-2;i++){const s=hrs[i].rev+hrs[i+1].rev+hrs[i+2].rev;if(s>best){best=s;bi=i}}
+  const hw=hrs[bi].k+'–'+String(+hrs[bi+2].k.slice(0,2)+1).padStart(2,'0')+':00';
+  const tot=hrs.reduce((a,b)=>a+b.rev,0);
+  $('a1').innerHTML=`ขายดีที่สุดเดือน <b>${TH_MON[+bm.k.slice(5)-1]} ${bm.k.slice(0,4)}</b> (${money(bm.rev)})${['10','11','12'].includes(bm.k.slice(5))?' ช่วงก่อนคริสต์มาส':''} · วันที่ขายดีที่สุดคือ <b>วัน${TH_DAY[bw.k]}</b> · ช่วงเวลาทองคือ <b>${hw}</b> ซึ่งทำยอดได้ ${(best/tot*100).toFixed(0)}% ของทั้งวัน ${D.weekday[5].rev===0?' · <b>ไม่มีการขายวันเสาร์</b>':''} · หลัง 18:00 ทำยอดได้แค่ ${(hrs.filter(x=>+x.k.slice(0,2)>=18).reduce((a,b)=>a+b.rev,0)/tot*100).toFixed(1)}%`;
+
+  // Q2
+  const topTotal=D.top.reduce((a,b)=>a+b.rev,0);
+  $('t-top').innerHTML='<table><thead><tr><th></th><th>สินค้า</th><th class="r">ยอดขาย</th><th class="r">ชิ้น</th><th class="r">บิล</th></tr></thead><tbody>'+
+    D.top.map((p,i)=>`<tr><td class="rank">${i+1}</td><td class="name" title="${esc(p.name)}">${esc(p.name)}<span class="code">${esc(p.code)}</span></td><td class="r"><span class="pill p-good">${money(p.rev)}</span></td><td class="r">${int(p.qty)}</td><td class="r">${int(p.orders)}</td></tr>`).join('')+'</tbody></table>';
+  $('t-bot').innerHTML='<table><thead><tr><th></th><th>สินค้า</th><th class="r">ยอดขาย</th><th class="r">ชิ้น</th></tr></thead><tbody>'+
+    D.bottom.map((p,i)=>`<tr><td class="rank">${i+1}</td><td class="name" title="${esc(p.name)}">${esc(p.name)}</td><td class="r"><span class="pill p-crit">${money(p.rev,2)}</span></td><td class="r">${int(p.qty)}</td></tr>`).join('')+'</tbody></table>';
+  $('n-slow').textContent=`มีสินค้า ${int(D.slow_share)} รายการ (${(D.slow_share/D.nprod*100).toFixed(0)}% ของสินค้าทั้งหมด) ที่ขายได้แค่บิลเดียวทั้งปี`;
+  $('a2').innerHTML=`สินค้าขายดีอันดับ 1 คือ <b>${esc(D.top[0].name)}</b> (${money(D.top[0].rev)}) · Top 10 ทำยอดรวม ${(topTotal/k.revenue*100).toFixed(0)}% ของยอดขายทั้งหมด จากสินค้า ${int(D.nprod)} รายการ · สินค้าส่วนใหญ่เป็นของตกแต่งบ้านและของขวัญ · ฝั่งขายไม่ดี มี <b>${int(D.slow_share)} สินค้า</b> ที่ขายได้แค่บิลเดียวทั้งปี เหมาะจะพิจารณาลดสต็อก`;
+
+  // Q3
+  const pill=r=>r==null?'<span class="pill p-blue">ไม่มียอดขาย</span>':r>=10?`<span class="pill p-crit">${r}% สูง</span>`:r>=5?`<span class="pill p-warn">${r}% กลาง</span>`:`<span class="pill p-good">${r}% ต่ำ</span>`;
+  $('t-can').innerHTML='<table><thead><tr><th></th><th>สินค้า</th><th class="r">ยกเลิก (บิล)</th><th class="r">ชิ้น</th><th class="r">มูลค่าที่หาย</th><th class="r">อัตรายกเลิก</th></tr></thead><tbody>'+
+    D.cancel.map((p,i)=>`<tr><td class="rank">${i+1}</td><td class="name" title="${esc(p.name)}">${esc(p.name)}</td><td class="r">${int(p.times)}</td><td class="r">${int(p.qty)}</td><td class="r">${money(p.lost)}</td><td class="r">${pill(p.rate)}</td></tr>`).join('')+'</tbody></table>';
+  $('lost').textContent='มูลค่าที่ถูกยกเลิกรวม '+money(k.lost)+' · '+int(k.cancel_orders)+' บิล';
+  barChart('ch-can',D.cancel_month.map(d=>({k:d.k,label:mLabel(d.k),title:mLabel(d.k),v:d.n})),{H:260,rotate:true,intStep:5,fmt:v=>Math.round(v),tipFn:d=>[int(d.v)+' บิลยกเลิก']});
+  const c0=D.cancel[0],topRateItem=[...D.cancel].filter(x=>x.rate!=null).sort((a,b)=>b.rate-a.rate)[0];
+  $('a3').innerHTML=`สินค้าที่ถูกยกเลิกบ่อยที่สุดคือ <b>${esc(c0.name)}</b> (${c0.times} บิล, เสียยอด ${money(c0.lost)}) ${(()=>{const r=D.top.findIndex(x=>x.code===c0.code);return r>=0?'ซึ่งเป็นสินค้าขายดีอันดับ '+(r+1)+' ด้วย ยิ่งขายมากจึงยิ่งถูกยกเลิกบ่อย':''})()} · ตัวที่อัตรายกเลิกสูงสุดใน Top 10 คือ <b>${esc(topRateItem.name)}</b> (ยกเลิก ${topRateItem.rate}% ของชิ้นที่สั่ง) · ภาพรวม <b>${k.cancel_rate}% ของบิลทั้งหมด</b> เป็นบิลยกเลิก มูลค่า ${money(k.lost)} (${(k.lost/k.revenue*100).toFixed(1)}% ของยอดขาย)`;
+
+  // Q4
+  const segs=D.seg;const nC=segs.reduce((a,b)=>a+b.n,0);
+  donut('ch-donut',segs,nC);
+  $('lg-seg').innerHTML=segs.map((s,i)=>`<div class="row"><span class="sw" style="background:${SEG_COL[i]}"></span><span>${SEG_TH[s.k]}</span><span class="cnt">${int(s.n)} คน</span><span class="pct">${nC?(s.n/nC*100).toFixed(0):0}%</span></div>`).join('');
+  barChart('ch-country',D.country.map(d=>({k:d.k,v:d.rev})),{horizontal:true,tipFn:d=>[money(d.v),(d.v/k.revenue*100).toFixed(1)+'% ของยอดขาย']});
+  $('t-cust').innerHTML='<table><thead><tr><th></th><th>CustomerID</th><th>ประเทศ</th><th class="r">ยอดซื้อ</th><th class="r">บิล</th><th class="r">ล่าสุด</th></tr></thead><tbody>'+
+    D.topcust.map((c,i)=>`<tr><td class="rank">${i+1}</td><td class="name">${esc(c.id)}</td><td>${esc(c.country)}</td><td class="r"><span class="pill p-blue">${money(c.rev)}</span></td><td class="r">${int(c.orders)}</td><td class="r">${c.rec} วันก่อน</td></tr>`).join('')+'</tbody></table>';
+  const rep=D.repeat,gs=D.guest,gTot=gs.known+gs.guest;
+  $('rep').textContent=int(rep.repeat)+' จาก '+int(rep.repeat+rep.once)+' คน ('+(rep.repeat/(rep.repeat+rep.once)*100).toFixed(0)+'%)';
+  split('sp-rep',[{v:rep.repeat,c:'var(--s1)',t:'ซื้อซ้ำ'},{v:rep.once,c:'#3a4766',t:'ซื้อครั้งเดียว'}]);
+  $('gst').textContent=money(gs.guest)+' ('+(gs.guest/gTot*100).toFixed(0)+'%)';
+  split('sp-gst',[{v:gs.known,c:'var(--s3)',t:'ลูกค้าที่ระบุตัวตน'},{v:gs.guest,c:'#3a4766',t:'ไม่ระบุตัวตน'}]);
+  const ch=segs.find(s=>s.k==='Champions'),chRev=segs.reduce((a,b)=>a+b.rev,0);
+  const c1=D.country[0], c1s=c1.rev/k.revenue*100, tc=D.topcust[0];
+  $('a4').innerHTML=`ลูกค้าส่วนใหญ่อยู่ <b>${esc(c1.k)}</b> (${c1s.toFixed(0)}% ของยอดขาย) · กลุ่ม <b>Champions</b> มีแค่ ${(ch.n/nC*100).toFixed(0)}% ของลูกค้า แต่ทำยอดขาย <b>${(ch.rev/chRev*100).toFixed(0)}%</b> ของยอดจากลูกค้าที่ระบุตัวตน · Champions ซื้อเฉลี่ย ${ch.f} บิลต่อคน · ยอดเฉลี่ยต่อบิลของทุกลูกค้า ${money(k.aov)} สูงกว่าการซื้อปลีกทั่วไปมาก ลูกค้าหลักจึง<b>น่าจะเป็นร้านค้าที่ซื้อไปขายต่อ</b> · ลูกค้ารายใหญ่สุด (ID ${esc(tc.id)}, ${esc(tc.country)}) คนเดียวทำยอด ${(tc.rev/k.revenue*100).toFixed(0)}% ของทั้งหมด`;
+}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));render(b.dataset.g)}));
+render('all');
+</script>
+</body>
+</html>
